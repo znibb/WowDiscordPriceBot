@@ -1,12 +1,18 @@
 # WowDiscordPriceBot
 
 ## Setup
-1. Go to `discordapp.com/developers/applications`
+1. Go to `http://discordapp.com/developers/applications`
 1. Create application
 1. Go to `Bot` sub menu and create a bot user
+1. Copy `.env-template` to `.env`
 1. Copy the bot TOKEN and paste into the `.env` file
 1. Go to `OAuth2` sub menu
 1. In `SCOPES` select `bot` and in `BOT PERMISSIONS` select `View Channels`, `Send Message`, `Manage Messages` and `Embed Links`
 1. Copy the generated URL and paste it into your web browser of choice
 1. Select which server to add bot user to
 1. Run `docker-compose up -d`
+
+## Working with submodules
+git config alias.sdiff '!'"git diff && git submodule foreach 'git diff'"
+git config alias.spush 'push --recurse-submodules=on-demand'
+git config alias.supdate 'submodule update --remote --merge'
