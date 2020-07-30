@@ -11,8 +11,3 @@
 1. Copy the generated URL and paste it into your web browser of choice
 1. Select which server to add bot user to
 1. Run `docker-compose up -d`
-
-## Working with submodules
-git config alias.sdiff '!'"git diff && git submodule foreach 'git diff'"
-git config alias.spush 'push --recurse-submodules=on-demand'
-git config alias.supdate 'submodule update --remote --merge'

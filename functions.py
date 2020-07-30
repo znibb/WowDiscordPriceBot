@@ -1,10 +1,43 @@
+import math
 import requests
 
-serverListUrl = "https://api.nexushub.co/wow-classic/v1/servers/full"
-itemUrlBase = "https://api.nexushub.co/wow-classic/v1/items/"
+baseUrl = "https://api.nexushub.co/wow-classic/v1/"
+serverListUrl = baseUrl + "servers/full"
 
 configuredServer = ""
 configuredFaction = ""
+
+def convertMoney(copperAmount):
+    gold =      math.floor(copperAmount/10000)
+    silver =    math.floor(copperAmount%10000/100)
+    copper =    copperAmount%100
+
+    result = ""
+    if not gold:
+        if not silver:
+            result = "{}c".format(copper)
+        else:
+            result = "{}s{:02}c".format(silver, copper)
+    else:
+        result = "{}g{:02}s{:02}c".format(gold, silver, copper)
+    
+    return result
+
+def getCraftInfo(itemName):
+    itemUrl = baseUrl + "crafting/" + configuredServer + "-" + configuredFaction + "/" + slugifyName(itemName)
+    response = requests.get(itemUrl)
+    responseJson = response.json()
+
+    if "error" in  responseJson:
+        return 0
+    
+    amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
+    amountCraftedMax    = responseJson["createdBy"][0]["amount"][1]
+    amountCrafted       = round((amountCraftedMin+amountCraftedMax)/2, 2)
+
+    reagents = responseJson["createdBy"][0]["reagents"]
+
+    return [amountCrafted, reagents]
 
 def getServers(region):
     response = requests.get(serverListUrl)
@@ -21,9 +54,12 @@ def getServers(region):
     return sorted(serverSet)
 
 def getPrice(itemName):
-    itemUrl = itemUrlBase + configuredServer + "-" + configuredFaction
+    itemUrl = baseUrl + "items/" + configuredServer + "-" + configuredFaction + "/" + itemName
     response = requests.get(itemUrl)
     responseJson = response.json()
+
+    if "stats" not in responseJson:
+        return 0
 
     return responseJson["stats"]["current"]["minBuyout"]
 
