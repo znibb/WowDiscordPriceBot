@@ -11,3 +11,6 @@
 1. Copy the generated URL and paste it into your web browser of choice
 1. Select which server to add bot user to
 1. Run `docker-compose up -d`
+
+## Submodules
+Pull updates to submodules: `git submodule update --remote --merge`
