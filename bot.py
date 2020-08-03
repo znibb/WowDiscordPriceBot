@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -64,7 +66,7 @@ async def list_servers(ctx, *args):
         response += server + "\n"
     await ctx.send(response)
 
-@bot.command(name='price', brief='AH price lookup')
+@bot.command(name='price', brief='AH price lookup', usage="<item name>")
 async def price(ctx, *arg):
     itemName = slugifyName(' '.join(arg))
     if serverSet and not factionSet:
@@ -72,17 +74,17 @@ async def price(ctx, *arg):
     elif not serverSet and factionSet:
         response = "Missing: Server. See `!help set_server`."
     elif not serverSet and not factionSet:
-        response = "Missing Server and Faction. See `!help set_server` and `!help set_faction` "
+        response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
     else:
         price = getPrice(itemName)
         if price == 0:
-            response = "Pricing data unavailable for " + itemName
+            response = "No match: " + itemName
         else:
             response =  "Price for: " + itemName + "\n"
             response += convertMoney(price)
     await ctx.send(response)
 
-@bot.command(name='craftprice', help='Craft price lookup')
+@bot.command(name='craftprice', brief='Craft price lookup', usage="<item name>")
 async def craftprice(ctx, *arg):
     itemName = slugifyName(' '.join(arg))
     if serverSet and not factionSet:
@@ -90,38 +92,68 @@ async def craftprice(ctx, *arg):
     elif not serverSet and factionSet:
         response = "Missing: Server. See `!help set_server`."
     elif not serverSet and not factionSet:
-        response = "Missing Server and Faction. See `!help set_server` and `!help set_faction` "
+        response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
     else:
         [amountCrafted, reagents] = getCraftInfo(itemName)
-        response =  "Craft price for: " + itemName + "\n"
-        response += "Reagents:\n"
-        totalCraftPrice = 0
-        for reagent in reagents:
-            if reagent["vendorPrice"] == None:
-                price = reagent["marketValue"]
-            else:
-                price = reagent["vendorPrice"]
-            totalCraftPrice += price
-            response += "\t" + reagent["name"] + " x" + str(reagent["amount"]) + " á " + convertMoney(price) + "\n"
-        response += "Total craft price: " + convertMoney(totalCraftPrice) + "\n"
-
-        ahPrice = getPrice(itemName)
-        if ahPrice == 0:
-            response += "AH price unavailable"
+        if amountCrafted == 0:
+            response = "No match: " + itemName
         else:
-            response += "AH price: " + convertMoney(ahPrice) + "\n"
-            if ahPrice > totalCraftPrice:
-                response += "Craft profit: " + convertMoney(ahPrice-totalCraftPrice)
+            response =  "Craft price for: " + itemName + "\n"
+            response += "Reagents:\n"
+            totalCraftPrice = 0
+            for reagent in reagents:
+                if reagent["vendorPrice"] == None:
+                    price = reagent["marketValue"]
+                else:
+                    price = reagent["vendorPrice"]
+                totalCraftPrice += price
+                response += "\t" + reagent["name"] + " x" + str(reagent["amount"]) + " á " + convertMoney(price) + "\n"
+            response += "Total craft price: " + convertMoney(totalCraftPrice) + "\n"
+
+            ahPrice = getPrice(itemName)
+            if ahPrice == 0:
+                response += "AH price unavailable"
             else:
-                response += "Craft loss: " + convertMoney(totalCraftPrice-ahPrice)
+                response += "AH price: " + convertMoney(ahPrice) + "\n"
+                if ahPrice > totalCraftPrice:
+                    response += "Craft profit: " + convertMoney(ahPrice-totalCraftPrice)
+                else:
+                    response += "Craft loss: " + convertMoney(totalCraftPrice-ahPrice)
     await ctx.send(response)
 
-@bot.command(name='enchantprice', help='Enchant price lookup')
-async def enchantprice(ctx, arg):
-    if not isSetup():
-        response = "Error: Need to setup server/faction first. See !help setup"
+@bot.command(name='enchantprice', brief='Enchant price lookup', help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>")
+async def enchantprice(ctx, *arg):
+    itemName = ' '.join(arg).title()
+    if serverSet and not factionSet:
+        response = "Missing: Faction. See `!help set_faction`."
+    elif not serverSet and factionSet:
+        response = "Missing: Server. See `!help set_server`."
+    elif not serverSet and not factionSet:
+        response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
     else:
-        response = "Enchant price loopup"
+        reagents = getEnchantReagents(itemName)
+
+        if reagents == 0:
+            response = "No match: " + itemName
+        else:
+            totalPrice = 0
+            reagentMissing = False
+            reagentPrices = dict()
+            for reagent, amount in reagents.items():
+                price = getPrice(slugifyName(reagent))
+                if price == 0:
+                    reagentMissing = True
+                reagentPrices[reagent] = price
+                totalPrice += price*amount
+            
+            if reagentMissing:
+                response = "Missing: At least one reagent price."
+            else:
+                response =  "Enchant price for: " + itemName + "\n"
+                response += "Reagents:\n"
+                for reagent, amount in reagents.items():
+                    response += "\t" + reagent + " x" + str(amount) + " á " + convertMoney(reagentPrices[reagent]) + "\n"
+                response += "Total enchant price: " + convertMoney(totalPrice)
     await ctx.send(response)
 
 @bot.command(name='version', help='Show bot version')

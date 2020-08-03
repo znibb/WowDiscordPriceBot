@@ -1,3 +1,4 @@
+import json
 import math
 import requests
 
@@ -29,7 +30,7 @@ def getCraftInfo(itemName):
     responseJson = response.json()
 
     if "error" in  responseJson:
-        return 0
+        return [0, dict()]
     
     amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
     amountCraftedMax    = responseJson["createdBy"][0]["amount"][1]
@@ -38,6 +39,15 @@ def getCraftInfo(itemName):
     reagents = responseJson["createdBy"][0]["reagents"]
 
     return [amountCrafted, reagents]
+
+def getEnchantReagents(enchantName):
+    with open("data/enchanting.json", 'r') as f:
+        formulas = json.load(f)
+
+    if enchantName in formulas:
+        return formulas[enchantName]["Reagents"]
+    else:
+        return 0
 
 def getServers(region):
     response = requests.get(serverListUrl)
