@@ -2,6 +2,7 @@
 
 version=$1
 current_branch=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+user=znibb
 name=pricebot
 
 # Check that script was run with argument
@@ -29,9 +30,9 @@ git push origin $version
 
 # Build and push new docker images
 ./build.sh
-docker tag znibb/$name:latest znibb/$name:$version
-docker push znibb/$name:$version
-docker push znibb/$name:latest
+docker tag $user/$name:latest $user/$name:$version
+docker push $user/$name:$version
+docker push $user/$name:latest
 
 # Exit gracefully
 exit 0
