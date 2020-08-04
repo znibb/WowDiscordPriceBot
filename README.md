@@ -13,4 +13,4 @@
 1. Run `docker-compose up -d`
 
 ## Submodules
-Pull updates to submodules: `git submodule update --remote --merge`
+Pull updates to submodules: `git submodule update --remote`
