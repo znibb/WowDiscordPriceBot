@@ -1,17 +1,17 @@
-FROM python:3.8-alpine
+FROM python:3.8-slim-buster
 
-RUN adduser -D pricebot
+RUN adduser pricebot
 
 RUN mkdir -p /pricebot/data
 WORKDIR /pricebot
 
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 COPY ./data/enchanting.json ./data
-COPY bot.py functions.py .env .
+COPY bot.py functions.py .env ./
 
 RUN chown -R pricebot:pricebot .
 USER pricebot
 
-CMD python bot.py
+CMD python3 bot.py

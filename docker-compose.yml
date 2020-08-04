@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  pricebot:
+    image: znibb/pricebot:latest
+    container_name: pricebot
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    networks:
+      - pricebot
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower_pricebot
+    environment:
+      - "WATCHTOWER_LABEL_ENABLE=true"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - pricebot
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --debug
+
+networks:
+  pricebot:
+    name: pricebot
+    driver: bridge
