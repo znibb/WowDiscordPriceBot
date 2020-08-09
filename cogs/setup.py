@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 
 class Setup(commands.Cog):
 	load_dotenv()
-	baseUrl = os.getenv('BASEURL')
+	baseUrl = str(os.getenv('BASEURL'))
 	serverListUrl = baseUrl + "servers/full"
-	
+
 	configuredFaction = ""
 	configuredServer = ""
 
