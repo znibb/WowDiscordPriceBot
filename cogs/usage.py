@@ -9,12 +9,11 @@ from dotenv import load_dotenv
 
 class Usage(commands.Cog):
 	load_dotenv()
-	baseUrl = os.getenv('BASEURL')
+	baseUrl = str(os.getenv('BASEURL'))
 
 	# Constructor
 	def __init__(self, bot):
 		self.bot = bot
-		self.setup = self.bot.get_cog('Setup')
 
 	# Support methods
 	@staticmethod
@@ -31,17 +30,18 @@ class Usage(commands.Cog):
 				result = "{}s{:02}c".format(silver, copper)
 		else:
 			result = "{}g{:02}s{:02}c".format(gold, silver, copper)
-		
+
 		return result
 
 	def getCraftInfo(self, itemName):
-		itemUrl = self.baseUrl + "crafting/" + self.setup.getConfiguredServer() + "-" + self.setup.getConfiguredFaction() + "/" + self.setup.slugifyName(itemName)
+		setup = self.bot.get_cog('Setup')
+		itemUrl = self.baseUrl + "crafting/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + setup.slugifyName(itemName)
 		response = requests.get(itemUrl)
 		responseJson = response.json()
 
 		if "error" in  responseJson:
 			return [0, dict()]
-		
+
 		amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
 		amountCraftedMax    = responseJson["createdBy"][0]["amount"][1]
 		amountCrafted       = round((amountCraftedMin+amountCraftedMax)/2, 2)
@@ -63,7 +63,8 @@ class Usage(commands.Cog):
 			return 0
 
 	def getPrice(self, itemName):
-		itemUrl = self.baseUrl + "items/" + self.setup.getConfiguredServer() + "-" + self.setup.getConfiguredFaction() + "/" + itemName
+		setup = self.bot.get_cog('Setup')
+		itemUrl = self.baseUrl + "items/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + itemName
 		response = requests.get(itemUrl)
 		responseJson = response.json()
 
@@ -75,10 +76,11 @@ class Usage(commands.Cog):
 	# Bot commands
 	@commands.command(name='price', brief='AH price lookup', usage="<item name>", aliases=['p'])
 	async def price(self, ctx, *arg):
-		itemName = self.setup.slugifyName(' '.join(arg))
-		
-		configuredFaction = self.setup.getConfiguredFaction()
-		configuredServer = self.setup.getConfiguredServer()
+		setup = self.bot.get_cog('Setup')
+		itemName = setup.slugifyName(' '.join(arg))
+
+		configuredFaction = setup.getConfiguredFaction()
+		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
 			response = "Missing: Faction. See `!help set_faction`."
 		elif configuredFaction != "" and configuredServer == "":
@@ -96,10 +98,11 @@ class Usage(commands.Cog):
 
 	@commands.command(name='craftprice', brief='Craft price lookup', usage="<item name>", aliases=['cp'])
 	async def craftprice(self, ctx, *arg):
-		itemName = self.setup.slugifyName(' '.join(arg))
-		
-		configuredFaction = self.setup.getConfiguredFaction()
-		configuredServer = self.setup.getConfiguredServer()
+		setup = self.bot.get_cog('Setup')
+		itemName = setup.slugifyName(' '.join(arg))
+
+		configuredFaction = setup.getConfiguredFaction()
+		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
 			response = "Missing: Faction. See `!help set_faction`."
 		elif configuredFaction != "" and configuredServer == "":
@@ -136,10 +139,11 @@ class Usage(commands.Cog):
 
 	@commands.command(name='enchantprice', brief='Enchant price lookup', help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>", aliases=['ep'])
 	async def enchantprice(self, ctx, *arg):
+		setup = self.bot.get_cog('Setup')
 		itemName = ' '.join(arg).title()
 
-		configuredFaction = self.setup.getConfiguredFaction()
-		configuredServer = self.setup.getConfiguredServer()
+		configuredFaction = setup.getConfiguredFaction()
+		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
 			response = "Missing: Faction. See `!help set_faction`."
 		elif configuredFaction != "" and configuredServer == "":
@@ -156,12 +160,12 @@ class Usage(commands.Cog):
 				reagentMissing = False
 				reagentPrices = dict()
 				for reagent, amount in reagents.items():
-					price = self.getPrice(self.setup.slugifyName(reagent))
+					price = self.getPrice(setup.slugifyName(reagent))
 					if price == 0:
 						reagentMissing = True
 					reagentPrices[reagent] = price
 					totalPrice += price*amount
-				
+
 				if reagentMissing:
 					response = "Missing: At least one reagent price."
 				else:
