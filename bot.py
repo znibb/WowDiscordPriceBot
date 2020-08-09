@@ -22,6 +22,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CommandNotFound):
         await ctx.send("Error: Unknown command. Try !help.")
     else:
+        await ctx.send("Error: Unknown error. Check server logs for more info.")
         raise error
 
 # Load cogs
