@@ -17,6 +17,8 @@ fi
 
 # Update version number
 sed -i "s/version=\".*\"/version=\"$version\"/" cogs/setup.py
+git add cogs/setup.py
+git commit -m "Updated displayed version number to $version"
 
 # Push updates and merge with master
 git push origin develop
