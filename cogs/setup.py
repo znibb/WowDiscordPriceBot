@@ -1,22 +1,26 @@
 import discord
 import requests
-import os
 from discord.ext import commands
-from dotenv import load_dotenv
+
+version="0.1.0"
 
 class Setup(commands.Cog):
-	load_dotenv()
-	baseUrl = str(os.getenv('BASEURL'))
+	baseUrl="https://api.nexushub.co/wow-classic/v1/"
 	serverListUrl = baseUrl + "servers/full"
 
+	# Variables
 	configuredFaction = ""
 	configuredServer = ""
 
 	# Constructor
 	def __init__(self, bot):
 		self.bot = bot
+		self.version = version
 
 	# Support methods
+	def getBaseUrl(self):
+		return self.baseUrl
+
 	def getConfiguredFaction(self):
 		return self.configuredFaction
 
@@ -99,7 +103,7 @@ class Setup(commands.Cog):
 
 	@commands.command(name='version', brief='Show running version')
 	async def version(self, ctx):
-		response = "Running version: " + str(os.getenv('VERSION'))
+		response = "Running version: " + str(self.version)
 		await ctx.send(response)
 
 def setup(bot):

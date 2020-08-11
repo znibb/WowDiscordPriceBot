@@ -4,6 +4,8 @@ services:
   pricebot:
     image: znibb/pricebot:latest
     container_name: pricebot
+    env_file:
+      - .env
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     logging:

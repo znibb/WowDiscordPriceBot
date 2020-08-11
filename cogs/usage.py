@@ -2,14 +2,11 @@ import discord
 import inspect
 import json
 import math
-import requests
 import os
+import requests
 from discord.ext import commands
-from dotenv import load_dotenv
 
 class Usage(commands.Cog):
-	load_dotenv()
-	baseUrl = str(os.getenv('BASEURL'))
 
 	# Constructor
 	def __init__(self, bot):
@@ -35,7 +32,7 @@ class Usage(commands.Cog):
 
 	def getCraftInfo(self, itemName):
 		setup = self.bot.get_cog('Setup')
-		itemUrl = self.baseUrl + "crafting/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + setup.slugifyName(itemName)
+		itemUrl = setup.getBaseUrl() + "crafting/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + setup.slugifyName(itemName)
 		response = requests.get(itemUrl)
 		responseJson = response.json()
 
@@ -64,7 +61,7 @@ class Usage(commands.Cog):
 
 	def getPrice(self, itemName):
 		setup = self.bot.get_cog('Setup')
-		itemUrl = self.baseUrl + "items/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + itemName
+		itemUrl = setup.getBaseUrl() + "items/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + itemName
 		response = requests.get(itemUrl)
 		responseJson = response.json()
 

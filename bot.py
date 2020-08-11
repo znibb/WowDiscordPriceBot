@@ -1,13 +1,11 @@
 import os
 from discord.ext import commands
-from dotenv import load_dotenv
 
 # Command prefix
 bot = commands.Bot(command_prefix='!', case_insensitive=True)
 
 # Load environment parameters
-load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
+token = os.getenv("DISCORD_TOKEN")
 
 # Bot joins
 @bot.event

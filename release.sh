@@ -16,7 +16,7 @@ elif [[ $current_branch != "develop" ]]; then
 fi
 
 # Update version number
-sed -i "s/VERSION=.*/VERSION=$version/" .env
+sed -i "s/version=\".*\"/version=\"$version\"/" cogs/setup.py
 
 # Push updates and merge with master
 git push origin develop
