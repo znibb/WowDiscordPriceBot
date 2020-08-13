@@ -119,7 +119,7 @@ class Usage(commands.Cog):
 						price = reagent["marketValue"]
 					else:
 						price = reagent["vendorPrice"]
-					totalCraftPrice += price
+					totalCraftPrice += reagent["amount"]*price
 					response += "\t" + reagent["name"] + " x" + str(reagent["amount"]) + " á " + self.convertMoney(price) + "\n"
 				response += "Total craft price: " + self.convertMoney(totalCraftPrice) + "\n"
 
