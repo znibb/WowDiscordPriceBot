@@ -1,7 +1,7 @@
 # WowDiscordPriceBot
 
 ## Setup
-1. Clone this repo somewhere appropriate: `git clone -b master https://github.com/znibb/WowDiscordPriceBot.git` 
+1. Clone this repo somewhere appropriate: `git clone -b master https://github.com/znibb/WowDiscordPriceBot.git`
 1. Go to `http://discordapp.com/developers/applications`
 1. Create a new application
 1. Go to `Bot` sub menu and create a bot user
@@ -14,5 +14,9 @@
 1. From the repo dir, run `docker-compose up -d`
 
 ## Changelog
+### 1.0.1
+#### Bug fixes
+- Fixed craft price not considering the amount of a reagent into the total price.
+
 ### 1.0.0
 - Initial release
