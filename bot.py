@@ -16,9 +16,9 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Error: Missing argument. Try !help.")
+        await ctx.send("Error: Missing argument. Try -help.")
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("Error: Unknown command. Try !help.")
+        await ctx.send("Error: Unknown command. Try -help.")
     else:
         await ctx.send("Error: Unknown error. Check server logs for more info.")
         raise error

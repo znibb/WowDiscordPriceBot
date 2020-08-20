@@ -142,16 +142,16 @@ class Usage(commands.Cog):
 		configuredFaction = setup.getConfiguredFaction()
 		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
-			response = "Missing: Faction. See `!help set_faction`."
+			response = "Missing: Faction. See `-help set_faction`."
 		elif configuredFaction != "" and configuredServer == "":
-			response = "Missing: Server. See `!help set_server`."
+			response = "Missing: Server. See `-help set_server`."
 		elif configuredFaction == "" and configuredServer == "":
-			response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
+			response = "Missing: Server and Faction. See `-help set_server` and `-help set_faction` "
 		else:
 			reagents = self.getEnchantReagents(itemName)
 
 			if reagents == 0:
-				response = "No match: " + itemName
+				response = "No match: " + itemName + ". Try -help enchantprice if you're unsure what went wrong."
 			else:
 				totalPrice = 0
 				reagentMissing = False
