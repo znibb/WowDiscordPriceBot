@@ -2,7 +2,7 @@ import os
 from discord.ext import commands
 
 # Command prefix
-bot = commands.Bot(command_prefix='!', case_insensitive=True)
+bot = commands.Bot(command_prefix='-', case_insensitive=True)
 
 # Load environment parameters
 token = os.getenv("DISCORD_TOKEN")
