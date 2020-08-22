@@ -14,13 +14,18 @@
 1. From the repo dir, run `docker-compose up -d`
 
 ## Changelog
+### 1.0.3
+#### Bug fixes
+- Fixed craftprice not taking into consideration that some crafts generate multiples of an item.
+
 ### 1.0.2
 #### Bug fixes
 - Updated error messages to reflect the correct command prefix.
 - Increased verbosity slightly for `enchantprice` error message.
+
 ### 1.0.1
 #### Bug fixes
 - Fixed craft price not considering the amount of a reagent into the total price.
 
 ### 1.0.0
-- Initial release
+- Initial release.
