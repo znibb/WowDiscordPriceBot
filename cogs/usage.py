@@ -67,6 +67,8 @@ class Usage(commands.Cog):
 
 		if "stats" not in responseJson:
 			return 0
+		elif responseJson["stats"]["current"] is None:
+			return 0
 
 		return responseJson["stats"]["current"]["minBuyout"]
 
@@ -111,7 +113,14 @@ class Usage(commands.Cog):
 			if amountCrafted == 0:
 				response = "No match: " + itemName
 			else:
-				response =  "Craft price for: " + itemName + "\n"
+				# If amountCrafted is X.0 cast to int
+				if amountCrafted%1 == 0.0:
+					amountCrafted = int(amountCrafted)
+				# Else round to 1 decimal place
+				else:
+					amountCrafted = round(amountCrafted, 1)
+
+				response =  "Craft price for: " + str(amountCrafted) + "x " + itemName + "\n"
 				response += "Reagents:\n"
 				totalCraftPrice = 0
 				for reagent in reagents:
@@ -121,17 +130,21 @@ class Usage(commands.Cog):
 						price = reagent["vendorPrice"]
 					totalCraftPrice += reagent["amount"]*price
 					response += "\t" + reagent["name"] + " x" + str(reagent["amount"]) + " á " + self.convertMoney(price) + "\n"
-				response += "Total craft price: " + self.convertMoney(totalCraftPrice/amountCrafted) + "\n"
+				pricePerItem = round(totalCraftPrice/amountCrafted)
+				response += "Total craft price: " + self.convertMoney(pricePerItem)
+				if amountCrafted > 1:
+					response += " (per item)"
+				response += "\n"
 
 				ahPrice = self.getPrice(itemName)
 				if ahPrice == 0:
 					response += "AH price unavailable"
 				else:
 					response += "AH price: " + self.convertMoney(ahPrice) + "\n"
-					if ahPrice > totalCraftPrice:
-						response += "Craft profit: " + self.convertMoney(ahPrice-totalCraftPrice)
+					if ahPrice > pricePerItem:
+						response += "Craft profit: " + self.convertMoney(ahPrice-pricePerItem)
 					else:
-						response += "Craft loss: " + self.convertMoney(totalCraftPrice-ahPrice)
+						response += "Craft loss: " + self.convertMoney(pricePerItem-ahPrice)
 		await ctx.send(response)
 
 	@commands.command(name='enchantprice', brief='Enchant price lookup', help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>", aliases=['ep'])
