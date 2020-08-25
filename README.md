@@ -16,6 +16,10 @@
 ## Changelog
 ### 1.0.3
 #### Bug fixes
+- Now handles names containing brackets or colons correctly.
+
+### 1.0.3
+#### Bug fixes
 - Fixed craftprice not taking into consideration that some crafts generate multiples of an item.
 
 ### 1.0.2
