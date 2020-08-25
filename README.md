@@ -14,7 +14,7 @@
 1. From the repo dir, run `docker-compose up -d`
 
 ## Changelog
-### 1.0.3
+### 1.0.4
 #### Bug fixes
 - Now handles names containing brackets or colons correctly.
 
