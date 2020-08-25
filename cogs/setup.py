@@ -68,8 +68,19 @@ class Setup(commands.Cog):
 
 	@staticmethod
 	def slugifyName(name):
-		# Replace spaces with dashes, remove apostrophes and ensure lower case
-		return name.replace(" ", "-").replace("'", "").lower()
+		# Replace spaces with dashes
+		name = name.replace(" ", "-")
+		# Remove apostrophes
+		name = name.replace("'", "")
+		# Remove colons
+		name = name.replace(":", "")
+		# Remove brackets
+		name = name.replace("[", "")
+		name = name.replace("]", "")
+		# Force lower case
+		name = name.lower()
+
+		return name
 
 	# Bot commands
 	@commands.command(name='list_servers', brief='List available servers', usage='[EU|US]')
