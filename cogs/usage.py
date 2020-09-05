@@ -36,7 +36,9 @@ class Usage(commands.Cog):
 		response = requests.get(itemUrl)
 		responseJson = response.json()
 
-		if "error" in  responseJson:
+		if "error" in responseJson:
+			return [0, dict()]
+		else if "createdBy" not in responseJson:
 			return [0, dict()]
 
 		amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
