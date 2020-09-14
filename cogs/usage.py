@@ -38,7 +38,7 @@ class Usage(commands.Cog):
 
 		if "error" in responseJson:
 			return [0, dict()]
-		else if "createdBy" not in responseJson:
+		elif "createdBy" not in responseJson:
 			return [0, dict()]
 
 		amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
