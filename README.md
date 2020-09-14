@@ -14,6 +14,14 @@
 1. From the repo dir, run `docker-compose up -d`
 
 ## Changelog
+### 1.1.0
+#### Features added
+- Added more command aliases.
+
+#### Bug fixes
+- Querying for craftprice for something that's not craftable now throws 'no match' error instead of 'unknown' error.
+- Removed duplicate "Cloak Dodge" enchant.
+
 ### 1.0.4
 #### Bug fixes
 - Now handles names containing brackets or colons correctly.
