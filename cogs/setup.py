@@ -83,7 +83,7 @@ class Setup(commands.Cog):
 		return name
 
 	# Bot commands
-	@commands.command(name='list_servers', brief='List available servers', usage='[EU|US]')
+	@commands.command(name='list_servers', brief='List available servers', usage='[EU|US]', aliases=["ls"])
 	async def list_servers(self, ctx, *args):
 		region = ' '.join(args)
 		servers = self.getServers(region, self.serverListUrl)
@@ -95,7 +95,7 @@ class Setup(commands.Cog):
 			response += server + "\n"
 		await ctx.send(response)
 
-	@commands.command(name='set_faction', brief='Set faction', usage='[horde|alliance]')
+	@commands.command(name='set_faction', brief='Set faction', usage='[horde|alliance]', aliases=["sf"])
 	async def set_faction(self, ctx, faction):
 		if self.setFaction(faction):
 			response = "Faction setup successful: " + self.slugifyName(faction)
@@ -103,7 +103,7 @@ class Setup(commands.Cog):
 			response = "Error: Invalid faction name: " + self.slugifyName(faction)
 		await ctx.send(response)
 
-	@commands.command(name='set_server',  brief='Set server', usage='<server>')
+	@commands.command(name='set_server',  brief='Set server', usage='<server>', aliases=["ss"])
 	async def set_server(self, ctx, *arg):
 		serverName = ' '.join(arg)
 		if self.setServer(serverName):
@@ -112,7 +112,7 @@ class Setup(commands.Cog):
 			response = "Error: Invalid server name: " + self.slugifyName(serverName)
 		await ctx.send(response)
 
-	@commands.command(name='version', brief='Show running version')
+	@commands.command(name='version', brief='Show running version', aliases=["v"])
 	async def version(self, ctx):
 		response = "Running version: " + str(self.version)
 		await ctx.send(response)
