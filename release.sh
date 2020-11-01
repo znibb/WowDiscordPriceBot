@@ -25,11 +25,15 @@ git push origin develop
 git checkout master
 git merge develop
 git push origin master
-git checkout develop
 
 # Create and push tag for new version
 git tag -a $version -m "Release $version"
 git push origin $version
+
+# Return to development branch
+git checkout develop
+git merge master
+git push origin develop
 
 # Build and push new docker images
 ./build.sh
