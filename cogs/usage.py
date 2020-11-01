@@ -75,11 +75,15 @@ class Usage(commands.Cog):
 		return responseJson["stats"]["current"]["minBuyout"]
 
 	# Bot commands
-	@commands.command(name='price', brief='AH price lookup', usage="<item name>", aliases=['p'])
+	@commands.command(name="price", brief="AH price lookup", usage="<item name>", aliases=["p"])
 	async def price(self, ctx, *arg):
+		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
+
+		# Fetch command arguments
 		itemName = setup.slugifyName(' '.join(arg))
 
+		# Check for valid server+faction setup
 		configuredFaction = setup.getConfiguredFaction()
 		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
@@ -88,6 +92,8 @@ class Usage(commands.Cog):
 			response = "Missing: Server. See `!help set_server`."
 		elif configuredFaction == "" and configuredServer == "":
 			response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
+		
+		# Function body
 		else:
 			price = self.getPrice(itemName)
 			if price == 0:
@@ -97,11 +103,15 @@ class Usage(commands.Cog):
 				response += self.convertMoney(price)
 		await ctx.send(response)
 
-	@commands.command(name='craftprice', brief='Craft price lookup', usage="<item name>", aliases=['cp'])
+	@commands.command(name="craftprice", brief="Craft price lookup", usage="<item name>", aliases=["cp"])
 	async def craftprice(self, ctx, *arg):
+		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
+
+		# Fetch command arguments
 		itemName = setup.slugifyName(' '.join(arg))
 
+		# Check for valid server+faction setup
 		configuredFaction = setup.getConfiguredFaction()
 		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
@@ -110,6 +120,8 @@ class Usage(commands.Cog):
 			response = "Missing: Server. See `!help set_server`."
 		elif configuredFaction == "" and configuredServer == "":
 			response = "Missing: Server and Faction. See `!help set_server` and `!help set_faction` "
+		
+		# Function body
 		else:
 			[amountCrafted, reagents] = self.getCraftInfo(itemName)
 			if amountCrafted == 0:
@@ -149,11 +161,15 @@ class Usage(commands.Cog):
 						response += "Craft loss: " + self.convertMoney(pricePerItem-ahPrice)
 		await ctx.send(response)
 
-	@commands.command(name='enchantprice', brief='Enchant price lookup', help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>", aliases=['ep'])
+	@commands.command(name="enchantprice", brief="Enchant price lookup", help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>", aliases=["ep"])
 	async def enchantprice(self, ctx, *arg):
+		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
+
+		# Fetch command arguments
 		itemName = ' '.join(arg).title()
 
+		# Check for valid server+faction setup
 		configuredFaction = setup.getConfiguredFaction()
 		configuredServer = setup.getConfiguredServer()
 		if configuredFaction == "" and configuredServer != "":
@@ -162,6 +178,8 @@ class Usage(commands.Cog):
 			response = "Missing: Server. See `-help set_server`."
 		elif configuredFaction == "" and configuredServer == "":
 			response = "Missing: Server and Faction. See `-help set_server` and `-help set_faction` "
+		
+		# Function body
 		else:
 			reagents = self.getEnchantReagents(itemName)
 
@@ -186,6 +204,79 @@ class Usage(commands.Cog):
 					for reagent, amount in reagents.items():
 						response += "\t" + reagent + " x" + str(amount) + " á " + self.convertMoney(reagentPrices[reagent]) + "\n"
 					response += "Total enchant price: " + self.convertMoney(totalPrice)
+		await ctx.send(response)
+
+	@commands.command(name='craftwrit', brief='Craftman\'s Writ lookup', help="Craftman\'s Writ lookup", usage="TBD", aliases=["cw"])
+	async def craftwrit(self, ctx, *arg):
+		# Pass access to setup methods
+		setup = self.bot.get_cog('Setup')
+
+		# Fetch command arguments
+		itemName = ' '.join(arg).title()
+
+		# Check for valid server+faction setup
+		configuredFaction = setup.getConfiguredFaction()
+		configuredServer = setup.getConfiguredServer()
+		if configuredFaction == "" and configuredServer != "":
+			response = "Missing: Faction. See `-help set_faction`."
+		elif configuredFaction != "" and configuredServer == "":
+			response = "Missing: Server. See `-help set_server`."
+		elif configuredFaction == "" and configuredServer == "":
+			response = "Missing: Server and Faction. See `-help set_server` and `-help set_faction` "
+		
+		# Function body
+		else:
+			currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+			parentdir = os.path.dirname(currentdir)
+			with open("" + parentdir + "/data/craftmansWrit.json", 'r') as f:
+				writList = json.load(f)
+
+			# If user supplied a specific writ as argument, show detailed breakdown of said writ
+			if itemName != "":
+				# Check that a valid writ was supplied
+				itemNameSlug = setup.slugifyName(itemName)
+				validWrit = False
+				for writ in writList.keys():
+					if itemNameSlug == setup.slugifyName(writ):
+						validWrit = True
+						writFullName = writ
+				
+				if validWrit == False:
+					response = "Invalid writ: " + itemName
+				else:
+					# Price for the writ item itself
+					writItemPrice = self.getPrice(str(writList[writFullName]["Writ"]))
+
+					# Breakdown compound material list
+					
+
+					response = "Price for Craftman\'s Writ - " + writFullName + ":\n"
+					response += "Writ price: " + self.convertMoney(writItemPrice) + "\n"
+
+			# If no argument was given, show overall info
+			else:
+				# Create writ-price dict
+				writPrices = dict()
+				for item, info in writList.items():
+					unitPrice = self.getPrice(str(info["ID"]))
+
+					# Skip writs with indeterminable price
+					if unitPrice == 0:
+						writSkipped = True
+					else:
+						amount = info["Amount"]
+						writPrices[item] = unitPrice*amount
+
+				# Results header
+				response = "Prices for Craftman\'s Writs:"
+				
+				if writSkipped:
+					response += "\n**List is incomplete due to missing price info**"
+
+				# Sort and print dict
+				for writ in sorted(writPrices, key=writPrices.get, reverse=False):
+					response += "\n" + writ + ": " + self.convertMoney(writPrices[writ])
+
 		await ctx.send(response)
 
 def setup(bot):
