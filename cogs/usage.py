@@ -6,8 +6,15 @@ import os
 import requests
 from discord.ext import commands
 
-class Usage(commands.Cog):
+helpDesc = {
+	"price": "AH price lookup",
+	"craftprice": "Craft price lookup",
+	"enchantprice": "Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon",
+	"craftwrit": "Craftman's Writ lookup\nOptionally add name of a writ item to get a detailed breakdown"
 
+}
+
+class Usage(commands.Cog):
 	# Constructor
 	def __init__(self, bot):
 		self.bot = bot
@@ -72,10 +79,10 @@ class Usage(commands.Cog):
 		elif responseJson["stats"]["current"] is None:
 			return 0
 
-		return responseJson["stats"]["current"]["minBuyout"]
+		return responseJson["stats"]["current"]["marketValue"]
 
 	# Bot commands
-	@commands.command(name="price", brief="AH price lookup", usage="<item name>", aliases=["p"])
+	@commands.command(name="price", brief="AH price lookup", help=helpDesc["price"], usage="<item name>", aliases=["p"])
 	async def price(self, ctx, *arg):
 		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
@@ -103,7 +110,7 @@ class Usage(commands.Cog):
 				response += self.convertMoney(price)
 		await ctx.send(response)
 
-	@commands.command(name="craftprice", brief="Craft price lookup", usage="<item name>", aliases=["cp"])
+	@commands.command(name="craftprice", brief="Craft price lookup", help=helpDesc["craftprice"], usage="<item name>", aliases=["cp"])
 	async def craftprice(self, ctx, *arg):
 		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
@@ -161,7 +168,7 @@ class Usage(commands.Cog):
 						response += "Craft loss: " + self.convertMoney(pricePerItem-ahPrice)
 		await ctx.send(response)
 
-	@commands.command(name="enchantprice", brief="Enchant price lookup", help="Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon", usage="<slot> <enchant name>", aliases=["ep"])
+	@commands.command(name="enchantprice", brief="Enchant price lookup", help=helpDesc["enchantprice"], usage="<slot> <enchant name>", aliases=["ep"])
 	async def enchantprice(self, ctx, *arg):
 		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
@@ -206,7 +213,7 @@ class Usage(commands.Cog):
 					response += "Total enchant price: " + self.convertMoney(totalPrice)
 		await ctx.send(response)
 
-	@commands.command(name='craftwrit', brief='Craftman\'s Writ lookup', help="Craftman\'s Writ lookup", usage="TBD", aliases=["cw"])
+	@commands.command(name='craftwrit', brief='Craftman\'s Writ lookup', help=helpDesc["craftwrit"], usage="(writ item)", aliases=["cw"])
 	async def craftwrit(self, ctx, *arg):
 		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
@@ -247,11 +254,15 @@ class Usage(commands.Cog):
 					# Price for the writ item itself
 					writItemPrice = self.getPrice(str(writList[writFullName]["Writ"]))
 
-					# Breakdown compound material list
-					
+					# Item price, will only be single type of item since no breakdown
+					reagentPrice = self.getPrice(itemNameSlug)
+					amount = writList[writFullName]["Amount"]
 
+					# Generate output
 					response = "Price for Craftman\'s Writ - " + writFullName + ":\n"
 					response += "Writ price: " + self.convertMoney(writItemPrice) + "\n"
+					response += str(amount) + " x " + itemNameSlug + " á " + self.convertMoney(reagentPrice) + "\n"
+					response += "Total: " + self.convertMoney(writItemPrice + amount*reagentPrice)
 
 			# If no argument was given, show overall info
 			else:
@@ -259,13 +270,14 @@ class Usage(commands.Cog):
 				writPrices = dict()
 				for item, info in writList.items():
 					unitPrice = self.getPrice(str(info["ID"]))
+					writPrice = self.getPrice(str(info["Writ"]))
 
 					# Skip writs with indeterminable price
 					if unitPrice == 0:
 						writSkipped = True
 					else:
 						amount = info["Amount"]
-						writPrices[item] = unitPrice*amount
+						writPrices[item] = unitPrice*amount + writPrice
 
 				# Results header
 				response = "Prices for Craftman\'s Writs:"
