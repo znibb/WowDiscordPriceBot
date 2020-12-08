@@ -13,12 +13,9 @@
 1. Select which server to add bot user to
 1. From the repo dir, run `docker-compose up -d`
 
-## ToDo
-- Temporary message that price data is being fetched
-- Add welcome message
-- Add option for setting what channel to output welcome message to
-- In game Links
-- Embed messages
+### 1.2.0
+#### Features added
+- Added command "craftwrit" which shows prices for completing "Craftman's Writ" quests if both the writ and items are purchased from the AH
 
 ### 1.1.0
 #### Features added
