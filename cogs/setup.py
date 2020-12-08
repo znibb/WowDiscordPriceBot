@@ -2,7 +2,7 @@ import discord
 import requests
 from discord.ext import commands
 
-version="1.1.0"
+version="1.2.0"
 
 class Setup(commands.Cog):
 	baseUrl="https://api.nexushub.co/wow-classic/v1/"
