@@ -12,6 +12,7 @@ RUN pip3 install -r requirements.txt
 COPY bot.py ./
 COPY ./cogs/setup.py ./cogs/usage.py ./cogs/
 COPY ./data/enchanting.json ./data/
+COPY ./data/craftmansWrit.json ./data/
 
 RUN chown -R pricebot:pricebot .
 USER pricebot
