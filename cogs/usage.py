@@ -6,11 +6,13 @@ import os
 import requests
 from discord.ext import commands
 
+# Dictionary of help decriptions
 helpDesc = {
 	"price": "AH price lookup",
 	"craftprice": "Craft price lookup",
 	"enchantprice": "Enchant price lookup\nValid slot names:\nBoots\nBracers\nChest\nCloak\nGloves\nShield\nWeapon\n2H Weapon",
-	"craftwrit": "Craftman's Writ lookup\nOptionally add name of a writ item to get a detailed breakdown"
+	"craftwrit": "Craftman's Writ lookup\nOptionally add name of a writ item to get a detailed breakdown",
+	"shoppinglist": "Shopping list breakdown\nDisplays the total amount of mats required to craft a certain number of an indicated item"
 
 }
 
@@ -37,6 +39,38 @@ class Usage(commands.Cog):
 
 		return result
 
+	def craftBreakdown(self, reagentList):
+		# Setup return dict
+		returnDict = dict()
+
+		for reagent in reagentList:
+			# Try to fetch craft info
+			[amountCrafted, subReagentList] = self.getCraftInfo(reagent["name"])
+
+			# If the item in question isn't craftable
+			if amountCrafted == 0:
+				returnDict[reagent["name"]] = dict()
+				returnDict[reagent["name"]]["amount"] = reagent["amount"]
+				if reagent["vendorPrice"] is None:
+					returnDict[reagent["name"]]["unitPrice"] = reagent["marketValue"]
+				else:
+					returnDict[reagent["name"]]["unitPrice"] = reagent["vendorPrice"]
+			# If it is craftable break it down further
+			else:
+				# Recursively call function
+				recurseDict = self.craftBreakdown(subReagentList)
+
+				# Add results to returnDict
+				for key in recurseDict.keys():
+					if key in returnDict:
+						returnDict[key]["amount"] += recurseDict[key]["amount"]*reagent["amount"]/amountCrafted
+					else:
+						returnDict[key] = dict()
+						returnDict[key]["amount"] = recurseDict[key]["amount"]*reagent["amount"]/amountCrafted
+						returnDict[key]["unitPrice"] = recurseDict[key]["unitPrice"]
+
+		return returnDict
+
 	def getCraftInfo(self, itemName):
 		setup = self.bot.get_cog('Setup')
 		itemUrl = setup.getBaseUrl() + "crafting/" + setup.getConfiguredServer() + "-" + setup.getConfiguredFaction() + "/" + setup.slugifyName(itemName)
@@ -47,14 +81,18 @@ class Usage(commands.Cog):
 			return [0, dict()]
 		elif "createdBy" not in responseJson:
 			return [0, dict()]
+		elif responseJson["createdBy"] == []:
+			return [0, dict()]
 
 		amountCraftedMin    = responseJson["createdBy"][0]["amount"][0]
 		amountCraftedMax    = responseJson["createdBy"][0]["amount"][1]
-		amountCrafted       = round((amountCraftedMin+amountCraftedMax)/2, 2)
 
-		reagents = responseJson["createdBy"][0]["reagents"]
+		# Assumes the mean amount is always an integer
+		amountCrafted       = int((amountCraftedMin+amountCraftedMax)/2)
 
-		return [amountCrafted, reagents]
+		reagentList = responseJson["createdBy"][0]["reagents"]
+
+		return [amountCrafted, reagentList]
 
 	@staticmethod
 	def getEnchantReagents(enchantName):
@@ -134,13 +172,6 @@ class Usage(commands.Cog):
 			if amountCrafted == 0:
 				response = "No match: " + itemName
 			else:
-				# If amountCrafted is X.0 cast to int
-				if amountCrafted%1 == 0.0:
-					amountCrafted = int(amountCrafted)
-				# Else round to 1 decimal place
-				else:
-					amountCrafted = round(amountCrafted, 1)
-
 				response =  "Craft price for: " + str(amountCrafted) + "x " + itemName + "\n"
 				response += "Reagents:\n"
 				totalCraftPrice = 0
@@ -213,7 +244,7 @@ class Usage(commands.Cog):
 					response += "Total enchant price: " + self.convertMoney(totalPrice)
 		await ctx.send(response)
 
-	@commands.command(name='craftwrit', brief='Craftman\'s Writ lookup', help=helpDesc["craftwrit"], usage="(writ item)", aliases=["cw"])
+	@commands.command(name="craftwrit", brief="Craftman\'s Writ lookup", help=helpDesc["craftwrit"], usage="(writ item)", aliases=["cw"])
 	async def craftwrit(self, ctx, *arg):
 		# Pass access to setup methods
 		setup = self.bot.get_cog('Setup')
@@ -288,6 +319,53 @@ class Usage(commands.Cog):
 				# Sort and print dict
 				for writ in sorted(writPrices, key=writPrices.get, reverse=False):
 					response += "\n" + writ + ": " + self.convertMoney(writPrices[writ])
+
+		await ctx.send(response)
+
+	@commands.command(name="shoppinglist", brief="Shopping list breakdown", help=helpDesc["shoppinglist"], usage="<amount> <item name>", aliases=["sl"])
+	async def shoppinglist(self, ctx, *arg):
+		# Pass access to setup methods
+		setup = self.bot.get_cog('Setup')
+
+		# Check for valid server+faction setup and input arguments
+		configuredFaction = setup.getConfiguredFaction()
+		configuredServer = setup.getConfiguredServer()
+		if configuredFaction == "" and configuredServer != "":
+			response = "Missing: Faction. See `-help set_faction`."
+		elif configuredFaction != "" and configuredServer == "":
+			response = "Missing: Server. See `-help set_server`."
+		elif configuredFaction == "" and configuredServer == "":
+			response = "Missing: Server and Faction. See `-help set_server` and `-help set_faction` "
+		elif len(arg) < 2 or arg[0].isdigit() == False:
+			response = "Incorrect input: " + ' '.join(arg).title()
+		
+		# Function body
+		else:
+			# Fetch command arguments
+			amountToCraft = int(arg[0])
+			itemName = ' '.join(arg[1:]).title()
+
+			# Check if indicated item is craftable
+			[amountCrafted, reagentList] = self.getCraftInfo(itemName)
+
+			if amountCrafted == 0:
+				response = "Item not craftable: " + itemName
+			else:
+				# Breakdown of mats for 1 craft
+				reagentBreakdownDict = self.craftBreakdown(reagentList)
+
+				# Determine how many crafts is needed
+				amountMultiplier = math.ceil(amountToCraft/amountCrafted)
+		
+				# Create chat output
+				totalPrice = 0
+				response = "Shopping list for " + str(amountCrafted*amountMultiplier) + "x " + itemName + ":\n"
+
+				for item, info in reagentBreakdownDict.items():
+					response += str(math.ceil(info["amount"]*amountMultiplier)) + "x " + item + " á " + self.convertMoney(info["unitPrice"]) + "\n"
+					totalPrice += info["unitPrice"]*info["amount"]*amountMultiplier
+				
+				response += "Total price: " + self.convertMoney(totalPrice)
 
 		await ctx.send(response)
 
