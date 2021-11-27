@@ -16,6 +16,15 @@
 ## Pull profession database updates
 1. git submodule update --remote
 
+## Changelog
+### 2.0.2
+#### Bug fixes
+- Changed the mats for Enchant Cloak - Subtlety to the BCC ones
+
+### 2.0.1
+#### Bug fixes
+- Enabled logging to console for easier fault tracing
+
 ### 2.0.0
 #### Features added
 - Included BCC crafts/enchants
