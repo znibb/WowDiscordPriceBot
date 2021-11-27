@@ -17,4 +17,4 @@ COPY ./data/craftmansWrit.json ./data/
 RUN chown -R pricebot:pricebot .
 USER pricebot
 
-CMD python3 bot.py
+CMD python3 -u bot.py
