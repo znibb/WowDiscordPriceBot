@@ -16,6 +16,8 @@ services:
     networks:
       - pricebot
     restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
 networks:
   pricebot:
